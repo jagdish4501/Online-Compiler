@@ -1,13 +1,12 @@
 import http from 'http';
 
 const PORT = 5000;
-import { CPP_Compiler, JS_Compiler, Python_Compiler } from './executer.js';
+import { CPP_Compiler, JS_Compiler, Python_Compiler, java_Compiler } from './executer.js';
 
 const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
     if (req.method === 'OPTIONS') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'Connection with cross Origin are enbled' }));
@@ -19,8 +18,7 @@ const server = http.createServer(async (req, res) => {
         });
         req.on('end', async () => {
             let success = true; // Flag to track success or failure
-            let result;
-
+            let result = 'Compiler not available';
             try {
                 const { code, language, input } = JSON.parse(data);
                 if (language === 'cpp' || language === 'c')
@@ -29,11 +27,12 @@ const server = http.createServer(async (req, res) => {
                     result = await JS_Compiler(code, input);
                 else if (language === 'python')
                     result = await Python_Compiler(code, input);
+                else if (language === 'java')
+                    result = await java_Compiler(code, input);
             } catch (error) {
                 console.error('Error parsing JSON or executing code:', error);
                 success = false;
             }
-
             // Send response based on success flag
             if (success) {
                 res.writeHead(200, { 'Content-Type': 'application/json' });

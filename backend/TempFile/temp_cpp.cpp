@@ -1,10 +1,10 @@
-#include<stdio.h>
+#include<bits/stdc++.h>
 
+using namespace std;
 
 int main(){
-    int n;scanf("%d",&n);
-    for(int i=0;i<n;i++){
-        printf("hello moto %d\n",i);
-    }
+    int n;cin>>n;
+    for(int i=0;i<n;i++)
+        cout<<"hello ram "<<i<<endl;
     return 0;
 }

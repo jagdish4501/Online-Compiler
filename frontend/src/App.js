@@ -1,37 +1,39 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './App.css';
 import Editor from "@monaco-editor/react";
-import Navbar from './Components/Navbar';
+import Navbar from './Navbar.js';
 import Axios from 'axios';
 import spinner from './logo.svg';
 
 function App() {
-  const [userCode, setUserCode] = useState('');
   const [userLang, setUserLang] = useState("javascript");
   const [userTheme, setUserTheme] = useState("vs-dark");
-  const [fontSize, setFontSize] = useState(20);
-  const [userInput, setUserInput] = useState("");
   const [userOutput, setUserOutput] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const options = {
-    fontSize: fontSize
-  }
+  const code = useRef({
+    'c': '',
+    'cpp': '',
+    'javascript': '',
+    'python': '',
+    'java': '',
+    'input': '',
+  })
 
   // Function to call the compile endpoint
   const compile = async () => {
     setLoading(true);
     try {
-      if (userCode === '') {
+      if (code.current[userLang] === '') {
         setLoading(false);
         return;
       }
       const res = await Axios.post('http://127.0.0.1:5000/compile', {
-        code: userCode,
+        code: code.current[userLang],
         language: userLang,
-        input: userInput
+        input: code.current['input']
       });
-      setUserOutput(res.data.message);
+      if (typeof res.data.message === 'string')
+        setUserOutput(res.data.message);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -40,9 +42,8 @@ function App() {
   };
 
   const handleCodeChange = (value) => {
-    setUserCode(value);
+    code.current[userLang] = value;
   }
-
   // Function to clear the output screen
   function clearOutput() {
     setUserOutput("");
@@ -53,18 +54,16 @@ function App() {
       <Navbar
         userLang={userLang} setUserLang={setUserLang}
         userTheme={userTheme} setUserTheme={setUserTheme}
-        fontSize={fontSize} setFontSize={setFontSize}
       />
       <div className="main">
         <div className="left-container">
           <Editor
-            options={options}
+            options={{ fontSize: 16 }}
             height="calc(100vh - 50px)"
             width="100%"
             theme={userTheme}
             language={userLang}
-            defaultLanguage="cpp"
-            defaultValue={userCode}
+            defaultValue='//java public className must be Temp '
             onChange={handleCodeChange}
           />
           <button className="run-btn" onClick={compile}>Run</button>
@@ -73,7 +72,7 @@ function App() {
           <h3>STD Input</h3>
           <div className="input-box">
             <textarea id="code-inp" onChange=
-              {(e) => setUserInput(e.target.value)}>
+              {(e) => { code.current['input'] = e.target.value }}>
             </textarea>
           </div>
           <h3>STD Output</h3>
